@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+sqlmodel
+passlib[bcrypt]
+python-jose
+langchain
+chromadb
+httpx
+groq
+python-dotenv
+
