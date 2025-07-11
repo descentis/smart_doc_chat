@@ -1,11 +1,13 @@
 fastapi
 uvicorn[standard]
+bcrypt<4.0
 sqlmodel
-passlib[bcrypt]
+passlib
 python-jose
 langchain
-chromadb
+langchain_chroma
 httpx
 groq
 python-dotenv
-
+pydantic-settings
+python-jose[cryptography]
