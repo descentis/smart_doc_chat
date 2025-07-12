@@ -2,3 +2,4 @@ streamlit
 requests
 streamlit-extras
 python-dotenv
+sseclient-py

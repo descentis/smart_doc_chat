@@ -11,3 +11,5 @@ groq
 python-dotenv
 pydantic-settings
 python-jose[cryptography]
+langgraph
+python-multipart
