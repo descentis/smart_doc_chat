@@ -1,0 +1,17 @@
+Speaker Bio: Dr. Amit Arjun Verma has completed his PhD from the prestigious Indian
+Institute of Technology, Ropar, where he delved deeply into core compression problems
+within the domain of NLP. Throughout his doctoral research, Amit exhibited exceptional
+skills and innovation, leading to the development of numerous open-sourced libraries
+that significantly contributed to collective intelligence research.
+Following the successful completion of his PhD, Amit embarked on a journey in the
+industry, bringing his expertise to real-world applications. He joined CoreCLM, located
+in Seattle, as a Research Scientist, where he focused on the development of
+cutting-edge AI tools for contract management. His tenure at CoreCLM was marked by
+groundbreaking contributions in the intersection of AI and legal technology,
+demonstrating his ability to apply academic knowledge to solve practical challenges.
+Currently, Amit Arjun Verma serves as the head of the Data Science Tech team at
+GUVI, a role in which he continues to drive innovation and excellence. With his
+extensive experience and deep understanding of NLP, Amit plays a pivotal role in
+leveraging data science to drive strategic decision-making and product development at
+GUVI. His leadership and technical prowess make him a sought-after expert in the field,
+inspiring both colleagues and aspiring data scientists alike.
