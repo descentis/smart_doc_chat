@@ -1,92 +1,130 @@
+import os
+import requests
 import streamlit as st
-import requests, os
-from streamlit_extras.switch_page_button import switch_page
-from sseclient import SSEClient  # for future SSE support if needed
+from sseclient import SSEClient  # future use for SSE
+from typing import List, Dict
 
-# ---- App config ----
-st.set_page_config(page_title="SmartDoc Chat", layout="centered", page_icon="📄")
+# ─── Config ────────────────────────────────────────────────────────────────
+st.set_page_config(page_title="📄 SmartDoc Chat", layout="centered")
 
-# ---- Constants ----
 BACKEND = os.getenv("BACKEND_URL", "http://localhost:8000")
 
-# ---- Session state ----
+# ─── Session State ────────────────────────────────────────────────────────
 if "token" not in st.session_state:
     st.session_state.token = None
 if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
+    st.session_state.chat_history: List[Dict] = []
 
-# ---- Sidebar ----
+# ─── Sidebar ──────────────────────────────────────────────────────────────
 st.sidebar.title("📄 SmartDoc Chat")
-st.sidebar.caption("Chat with your documents using Groq‑powered RAG + LangGraph.")
+st.sidebar.caption("Chat with your documents (Groq • LangGraph • Chroma)")
 
-# ========== AUTH FLOW ==========
+# Helper to fetch persisted history once after login
+def load_history_from_backend():
+    try:
+        r = requests.get(
+            f"{BACKEND}/chat/history",
+            headers={"Authorization": f"Bearer {st.session_state.token}"}
+        )
+        if r.ok:
+            st.session_state.chat_history = r.json()
+    except Exception:
+        pass  # silently ignore if endpoint not present
+
+# ─── Auth Flow ────────────────────────────────────────────────────────────
 if st.session_state.token is None:
-    with st.form("login_form", clear_on_submit=False):
-        st.subheader("🔐 Login")
-        username = st.text_input("Username")
-        password = st.text_input("Password", type="password")
-        submitted = st.form_submit_button("Log in")
+    tab_login, tab_register = st.tabs(["🔐 Login", "🆕 Register"])
 
-    if submitted:
-        try:
-            res = requests.post(f"{BACKEND}/auth/login", json={"username": username, "password": password})
-            if res.status_code == 200:
-                st.session_state.token = res.json()["access_token"]
-                st.success("✅ Logged in! Reloading…")
-                st.rerun()
-            else:
-                st.error("❌ Login failed: invalid credentials")
-        except Exception as e:
-            st.error(f"🚫 Could not connect to backend: {e}")
+    with tab_login:
+        with st.form("login_form"):
+            username = st.text_input("Username")
+            password = st.text_input("Password", type="password")
+            if st.form_submit_button("Log in"):
+                try:
+                    r = requests.post(
+                        f"{BACKEND}/auth/login",
+                        json={"username": username, "password": password},
+                    )
+                    if r.status_code == 200:
+                        st.session_state.token = r.json()["access_token"]
+                        st.success("✅ Logged in! Reloading…")
+                        load_history_from_backend()
+                        st.rerun()
+                    else:
+                        st.error("❌ Invalid credentials")
+                except Exception as e:
+                    st.error(f"Backend unreachable: {e}")
 
-# ========== MAIN CHAT UI ==========
+    with tab_register:
+        with st.form("register_form"):
+            new_user = st.text_input("New Username")
+            new_pass = st.text_input("New Password", type="password")
+            if st.form_submit_button("Register"):
+                try:
+                    r = requests.post(
+                        f"{BACKEND}/auth/register",
+                        json={"username": new_user, "password": new_pass},
+                    )
+                    if r.ok:
+                        st.success("User created! Please log in.")
+                    else:
+                        st.error("Registration failed: " + r.text)
+                except Exception as e:
+                    st.error(f"Backend unreachable: {e}")
+
+# ─── Main Chat UI ─────────────────────────────────────────────────────────
 else:
-    st.subheader("💬 Chat with SmartDoc")
+    st.subheader("💬 Chat with SmartDoc")
     st.markdown("<hr>", unsafe_allow_html=True)
 
-    # ---- Document upload ----
-    with st.expander("📂 Upload document"):
-        uploaded = st.file_uploader("Choose PDF or TXT", type=["pdf", "txt"])
-        if uploaded and st.button("Upload & Ingest"):
-            files = {"file": (uploaded.name, uploaded.getvalue())}
-            try:
-                res = requests.post(f"{BACKEND}/docs/upload",
-                                    headers={"Authorization": f"Bearer {st.session_state.token}"},
-                                    files=files)
-                if res.ok:
-                    st.success(f"Ingested {res.json()['chunks']} new chunks!")
-                else:
-                    st.error("Upload failed: " + res.text)
-            except Exception as e:
-                st.error(f"🚫 Could not connect to backend: {e}")
+    # --- Upload ---
+    with st.expander("📂 Upload document"):
+        upload = st.file_uploader("PDF or TXT", type=["pdf", "txt"])
+        if upload and st.button("Upload & Ingest"):
+            files = {"file": (upload.name, upload.getvalue())}
+            r = requests.post(
+                f"{BACKEND}/docs/upload",
+                headers={"Authorization": f"Bearer {st.session_state.token}"},
+                files=files,
+            )
+            if r.ok:
+                st.success(f"Indexed {r.json()['chunks']} new chunks.")
+            else:
+                st.error("Upload failed: " + r.text)
 
-    # ---- Render chat history ----
-    for msg in st.session_state.chat_history:
-        st.chat_message(msg["role"]).write(msg["text"])
+    # --- Render history ---
+    for turn in st.session_state.chat_history:
+        st.chat_message(turn["role"]).write(turn["text"])
 
-    # ---- Chat input ----
+    # --- Chat input ---
     if prompt := st.chat_input("Ask a question…"):
+        # Show user bubble immediately
         st.chat_message("user").write(prompt)
         st.session_state.chat_history.append({"role": "user", "text": prompt})
 
-        # Stream response
+        # Assistant placeholder
         placeholder = st.chat_message("assistant")
-        response_box = placeholder.empty()
+        box = placeholder.empty()
 
-        headers = {"Authorization": f"Bearer {st.session_state.token}"}
         try:
-            with requests.post(f"{BACKEND}/chat/stream",
-                               json={"query": prompt},
-                               headers=headers,
-                               stream=True) as r:
-                collected = ""
+            with requests.post(
+                f"{BACKEND}/chat/stream",
+                json={"query": prompt},
+                headers={"Authorization": f"Bearer {st.session_state.token}"},
+                stream=True,
+            ) as r:
+                answer = ""
                 for chunk in r.iter_lines(decode_unicode=True):
                     if chunk:
-                        collected += chunk
-                        response_box.markdown(collected + "▌")
-                response_box.markdown(collected)
-                st.session_state.chat_history.append({"role": "assistant", "text": collected})
+                        answer += chunk
+                        box.markdown(answer + "▌")
+                box.markdown(answer)
+                st.session_state.chat_history.append({"role": "assistant", "text": answer})
         except Exception as e:
-            response_box.markdown(f"🚫 Error connecting to backend: {e}")
+            box.markdown(f"❌ Error: {e}")
 
-    st.sidebar.button("🔒 Logout", on_click=lambda: st.session_state.clear())
+    # --- Logout ---
+    if st.sidebar.button("🔒 Logout"):
+        st.session_state.clear()
+        st.rerun()
+
