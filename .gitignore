@@ -3,3 +3,32 @@
 env/
 __pycache__/
 .venv/
+*.py[cod]
+*.egg-info/
+
+# SQLite DB
+*.db
+
+# Streamlit and cache
+.streamlit/
+frontend/.streamlit/
+frontend/.cache/
+frontend/__pycache__/
+
+# Docker
+*.log
+*.pid
+*.sock
+*.tar
+*.img
+*.bak
+*.tmp
+
+# Docker volumes
+volumes/
+frontend/venv/
+backend/venv/
+
+# OS Files
+.DS_Store
+Thumbs.db
