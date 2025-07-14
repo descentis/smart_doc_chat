@@ -3,3 +3,4 @@ requests
 streamlit-extras
 python-dotenv
 sseclient-py
+PyYAML>=6.0
