@@ -23,6 +23,35 @@ Docker
 
 Groq API Key
 
+# Quickstart with Docker
+1. Clone the Repository
+```bash
+git clone https://github.com/yourusername/smart-doc-chat.git
+cd smart-doc-chat
+```
+2. Set Environment Variables
+Create a .env file at the root:
+
+```bash
+# .env
+GROQ_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxx
+JWT_SECRET_KEY=your_super_secret_key
+```
+You can generate a random JWT key using Python:
+
+```python
+python -c "import secrets; print(secrets.token_urlsafe(32))"
+```
+3. Build & Run
+```python
+docker compose build --no-cache
+docker compose up
+```
+🔌 Backend (FastAPI): http://localhost:8000
+
+🌐 Frontend (Streamlit): http://localhost:8501
+
+
 
 # Implementation Roadmap
 ------------------------
