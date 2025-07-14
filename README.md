@@ -1,3 +1,28 @@
+# SmartDoc Chat – RAG App
+SmartDoc Chat is a full-stack Retrieval-Augmented Generation (RAG) application that allows users to chat with uploaded documents using Groq LLMs. It combines LangGraph, FastAPI, Streamlit, and Docker to deliver blazing-fast, document-aware answers with user login and memory.
+
+# Features
+* User login with JWT authentication (SQLite + FastAPI)
+
+* Chat with documents using Groq + LangGraph
+
+* Upload .pdf or .txt files and ingest into Chroma vector store
+
+* Streamed answers with memory per user (stored + retrieved)
+
+* Fully Dockerized (backend + frontend)
+
+* Ultra-low latency with Groq API
+
+# Installation
+## Prerequisites
+Python 3.11+
+
+Docker
+
+Groq API Key
+
+
 # Implementation Roadmap
 ------------------------
 | Phase     | Scope | Key Deliverabls|
